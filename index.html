@@ -51,7 +51,7 @@
     gap: 12px;
     padding: 8px 16px;
     width: auto;
-    max-width: 95%; 
+    max-width: 95%; /* Expanded slightly to ensure pill won't cut off on narrow landscape */
     background: rgba(28, 28, 28, 0.92);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
@@ -67,6 +67,7 @@
     min-width: 0;
   }
 
+  /* Standard Base Formatting applied universally to all layout viewing profiles */
   #modeBtn, #clearBtn {
     border: none; 
     border-radius: 20px; 
@@ -154,8 +155,34 @@
   .v-left   { top: 0; left: 0; height: 100%; width: 23px; background: linear-gradient(to right,  rgba(255,255,255,1) 0%, rgba(212,175,55,0.4) 45%, rgba(212,175,55,0) 100%); }
   .v-right  { top: 0; right: 0; height: 100%; width: 23px; background: linear-gradient(to left,   rgba(255,255,255,1) 0%, rgba(212,175,55,0.4) 45%, rgba(212,175,55,0) 100%); }
 
+  /* 6. Stamp Popup Mechanics */
+  #popup {
+    position: absolute; display: none;
+    flex-direction: row; flex-wrap: wrap; justify-content: center;
+    background: #2c2c2c; border: 1.5px solid #555;
+    border-radius: 8px; padding: 6px; gap: 4px;
+    z-index: 10; box-shadow: 0 4px 16px rgba(0,0,0,0.6);
+    max-width: 230px;
+  }
+
+  .pop-btn {
+    background: #3a3a3a; color: #f0f0f0;
+    border: 1px solid #666; border-radius: 5px;
+    font-size: 15px; font-weight: 700;
+    padding: 6px 10px; cursor: pointer;
+    min-width: 38px; text-align: center;
+    transition: background 0.12s, transform 0.05s; user-select: none;
+  }
+  .pop-btn:hover { background: #e67e22; color: #fff; border-color: #e67e22; }
+  .pop-btn:active { transform: scale(0.92); }
+  .pop-btn.danger { color: #e74c3c; }
+  .pop-btn.danger:hover { background: #e74c3c; color: #fff; border-color: #e74c3c; }
+
+  /* Media Breakpoint Override: Cleared button shrinkage to keep layouts identical across views */
   @media (orientation: landscape) and (max-height: 500px) {
-    #toolbar { top: 6px; }
+    #toolbar {
+      top: 6px;
+    }
     #modeLabel { display: none; }
   }
 </style>
@@ -188,6 +215,17 @@
       </div>
       
       <canvas id="drawLayer" class="pointer-mode"></canvas>
+      
+      <div id="popup">
+        <button class="pop-btn" data-val="0">0</button>
+        <button class="pop-btn" data-val="1">1</button>
+        <button class="pop-btn" data-val="2">2</button>
+        <button class="pop-btn" data-val="3">3</button>
+        <button class="pop-btn" data-val="4">4</button>
+        <button class="pop-btn" data-val="upbow">V</button>
+        <button class="pop-btn" data-val="downbow">⊓</button>
+        <button class="pop-btn danger" data-val="clear">✕</button>
+      </div>
     </div>
 
   </div>
@@ -198,6 +236,7 @@
   const stage          = document.getElementById('stage');
   const canvas         = document.getElementById('drawLayer');
   const ctx            = canvas.getContext('2d');
+  const popup          = document.getElementById('popup');
   const clearBtn       = document.getElementById('clearBtn');
   const modeBtn        = document.getElementById('modeBtn');
   const modeLabel      = document.getElementById('modeLabel');
@@ -205,29 +244,10 @@
 
   let isMarkupMode = false;
   let isAnimatingClear = false;
+  let pendingX = 0, pendingY = 0;
   let marks = [];
 
-  // CANVAS DIALOG CONFIGURATION BLOCK (Now scales with viewport width bounds)
-  let popupState = {
-    visible: false,
-    x: 0, // In canvas design coordinate points
-    y: 0,
-    w: 0,
-    h: 0,
-    buttons: [] 
-  };
-
-  const POP_ITEMS = [
-    { label: '0',       val: '0' },
-    { label: '1',       val: '1' },
-    { label: '2',       val: '2' },
-    { label: '3',       val: '3' },
-    { label: '4',       val: '4' },
-    { label: 'V',       val: 'upbow' },
-    { label: '⊓',       val: 'downbow' },
-    { label: '✕',       val: 'clear', isDanger: true }
-  ];
-
+  // FIXED: Standardizes string labels seamlessly across all platform dimensions
   function updateButtonLabels() {
     clearBtn.textContent = "✕ Clear My Markings";
     if (isMarkupMode) {
@@ -269,9 +289,6 @@
   function redraw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     marks.forEach(drawMark);
-    if (popupState.visible && !isAnimatingClear) {
-      drawCanvasPopup();
-    }
   }
 
   function drawMark(m) {
@@ -350,186 +367,76 @@
     }
   }
 
-  // DYNAMIC COMPONENT: Draw the popup directly onto the canvas grid system so it scales with user zoom
-  function calculatePopupLayout(clickX, clickY) {
-    const scaleFactor = Math.max(canvas.width * 0.0032, 0.45);
-    const btnW = 38 * scaleFactor;
-    const btnH = 34 * scaleFactor;
-    const gap  = 5 * scaleFactor;
-    const padding = 6 * scaleFactor;
-    
-    // 4 columns x 2 rows adaptive grid calculation
-    const cols = 4;
-    const rows = 2;
-    
-    const w = (cols * btnW) + ((cols - 1) * gap) + (padding * 2);
-    const h = (rows * btnH) + ((rows - 1) * gap) + (padding * 2);
-    
-    let x = clickX + (10 * scaleFactor);
-    let y = clickY + (10 * scaleFactor);
-    
-    if (x + w > canvas.width)  x = clickX - w - (10 * scaleFactor);
-    if (y + h > canvas.height) y = clickY - h - (10 * scaleFactor);
-    
-    x = Math.max(padding, x);
-    y = Math.max(padding, y);
-
-    let buttons = [];
-    POP_ITEMS.forEach((item, idx) => {
-      const r = Math.floor(idx / cols);
-      const c = idx % cols;
-      const bx = x + padding + (c * (btnW + gap));
-      const by = y + padding + (r * (btnH + gap));
-      buttons.push({
-        val: item.val,
-        label: item.label,
-        isDanger: item.isDanger || false,
-        x: bx, y: by, w: btnW, h: btnH
-      });
-    });
-
-    popupState = { visible: true, x, y, w, h, buttons, scaleFactor, padding };
-  }
-
-  function drawCanvasPopup() {
-    const p = popupState;
-    const fSize = Math.round(15 * p.scaleFactor);
-    
-    // Background window container panel
-    ctx.save();
-    ctx.fillStyle = '#2c2c2c';
-    ctx.strokeStyle = '#555555';
-    ctx.lineWidth = Math.max(1.5 * p.scaleFactor, 1);
-    
-    // Smooth rounded rect implementation
-    const r = 8 * p.scaleFactor;
-    ctx.beginPath();
-    ctx.moveTo(p.x + r, p.y);
-    ctx.lineTo(p.x + p.w - r, p.y);
-    ctx.quadraticCurveTo(p.x + p.w, p.y, p.x + p.w, p.y + r);
-    ctx.lineTo(p.x + p.w, p.y + p.h - r);
-    ctx.quadraticCurveTo(p.x + p.w, p.y + p.h, p.x + p.w - r, p.y + p.h);
-    ctx.lineTo(p.x + r, p.y + p.h - r);
-    ctx.quadraticCurveTo(p.x, p.y + p.h, p.x, p.y + p.h - r);
-    ctx.lineTo(p.x, p.y + r);
-    ctx.quadraticCurveTo(p.x, p.y, p.x + r, p.y);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-
-    // Render inner component selector keys
-    p.buttons.forEach(b => {
-      ctx.fillStyle = b.isDanger ? '#442222' : '#3a3a3a';
-      ctx.strokeStyle = b.isDanger ? '#e74c3c' : '#666666';
-      ctx.lineWidth = Math.max(1 * p.scaleFactor, 1);
-      
-      const br = 4 * p.scaleFactor;
-      ctx.beginPath();
-      ctx.moveTo(b.x + br, b.y);
-      ctx.lineTo(b.x + b.w - br, b.y);
-      ctx.quadraticCurveTo(b.x + b.w, b.y, b.x + b.w, b.y + br);
-      ctx.lineTo(b.x + b.w, b.y + b.h - br);
-      ctx.quadraticCurveTo(b.x + b.w, b.y + b.h, b.x + b.w - br, b.y + b.h);
-      ctx.lineTo(b.x + br, b.y + b.h - br);
-      ctx.quadraticCurveTo(b.x, b.y + b.h, b.x, b.y + b.h - br);
-      ctx.lineTo(b.x, b.y + br);
-      ctx.quadraticCurveTo(b.x, b.y, b.x + br, b.y);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-
-      // Label Typography profile configuration
-      ctx.fillStyle = b.isDanger ? '#e74c3c' : '#f0f0f0';
-      ctx.font = `700 ${fSize}px Arial`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(b.label, b.x + (b.w / 2), b.y + (b.h / 2));
-    });
-    ctx.restore();
-  }
-
-  function hidePopup() { 
-    if(popupState.visible) {
-      popupState.visible = false; 
-      redraw();
-    }
-  }
-
   function getEventPos(e) {
     const rect = canvas.getBoundingClientRect();
     const src  = e.changedTouches ? e.changedTouches[0] : e;
     return {
       x:  (src.clientX - rect.left) * (canvas.width  / rect.width),
-      y:  (src.clientY - rect.top)  * (canvas.height / rect.height)
+      y:  (src.clientY - rect.top)  * (canvas.height / rect.height),
+      cx: src.clientX - rect.left,
+      cy: src.clientY - rect.top
     };
   }
 
-  // INTERACTION MECHANICS MATRIX HANDLER
-  function handleStageTap(clickX, clickY, origEvent) {
-    if (!isMarkupMode || isAnimatingClear) return;
-
-    // Check if user tapped inside an open popup window matrix
-    if (popupState.visible) {
-      let hitButton = null;
-      popupState.buttons.forEach(b => {
-        if (clickX >= b.x && clickX <= b.x + b.w && clickY >= b.y && clickY <= b.y + b.h) {
-          hitButton = b;
-        }
-      });
-
-      if (hitButton) {
-        origEvent.stopPropagation();
-        const val = hitButton.val;
-        popupState.visible = false; 
-        
-        if (val === 'clear') {
-          const radius = Math.max(canvas.width * 0.032, 16) * 1.2;
-          marks = marks.filter(m => {
-            const dx = m.x - pendingX, dy = m.y - pendingY;
-            return Math.sqrt(dx * dx + dy * dy) > radius;
-          });
-        } else if (val === 'upbow') {
-          marks.push({ type: 'upbow',   x: pendingX, y: pendingY });
-        } else if (val === 'downbow') {
-          marks.push({ type: 'downbow', x: pendingX, y: pendingY });
-        } else {
-          marks.push({ type: 'number', val, x: pendingX, y: pendingY });
-        }
-        redraw();
-        return;
-      } else {
-        // Tapped outside layout buttons but on the empty area of popup panel
-        if (clickX >= popupState.x && clickX <= popupState.x + popupState.w &&
-            clickY >= popupState.y && clickY <= popupState.y + popupState.h) {
-          origEvent.stopPropagation();
-          return; 
-        }
-      }
-    }
-
-    // Default: User tapped layout target coordinate node to prompt a new menu position
-    origEvent.stopPropagation();
-    pendingX = clickX; 
-    pendingY = clickY;
-    calculatePopupLayout(clickX, clickY);
-    redraw();
+  function showPopup(cx, cy) {
+    if (isAnimatingClear) return;
+    popup.style.display = 'flex';
+    const pw = popup.offsetWidth  || 230;
+    const ph = popup.offsetHeight || 90;
+    const sw = stage.offsetWidth;
+    const sh = stage.offsetHeight;
+    const M  = 8;
+    let left = cx + 8, top = cy + 12;
+    if (left + pw + M > sw) left = cx - pw - 8;
+    if (top  + ph + M > sh) top  = cy - ph - 12;
+    popup.style.left = Math.max(M, left) + 'px';
+    popup.style.top  = Math.max(M, top)  + 'px';
   }
 
+  function hidePopup() { popup.style.display = 'none'; }
+
   canvas.addEventListener('click', function (e) {
+    if (!isMarkupMode || isAnimatingClear) return;
+    e.stopPropagation();
     const pos = getEventPos(e);
-    handleStageTap(pos.x, pos.y, e);
+    pendingX = pos.x; pendingY = pos.y;
+    showPopup(pos.cx, pos.cy);
   });
 
   canvas.addEventListener('touchend', function (e) {
     if (!isMarkupMode || isAnimatingClear) return;
-    if (e.touches && e.touches.length > 0) return; // Ignore pinch actions
+    if (e.touches && e.touches.length > 0) return; 
 
+    e.stopPropagation();
     const pos = getEventPos(e);
-    handleStageTap(pos.x, pos.y, e);
+    pendingX = pos.x; pendingY = pos.y;
+    showPopup(pos.cx, pos.cy);
   }, { passive: true });
 
+  popup.addEventListener('click', function (e) {
+    const btn = e.target.closest('.pop-btn');
+    if (!btn || isAnimatingClear) return;
+    e.stopPropagation();
+    const val = btn.dataset.val;
+    hidePopup();
+    if (val === 'clear') {
+      const radius = Math.max(canvas.width * 0.032, 16) * 1.2;
+      marks = marks.filter(m => {
+        const dx = m.x - pendingX, dy = m.y - pendingY;
+        return Math.sqrt(dx * dx + dy * dy) > radius;
+      });
+    } else if (val === 'upbow') {
+      marks.push({ type: 'upbow',   x: pendingX, y: pendingY });
+    } else if (val === 'downbow') {
+      marks.push({ type: 'downbow', x: pendingX, y: pendingY });
+    } else {
+      marks.push({ type: 'number', val, x: pendingX, y: pendingY });
+    }
+    redraw();
+  });
+
   document.addEventListener('click', function (e) {
-    if (e.target !== canvas) hidePopup();
+    if (!popup.contains(e.target) && e.target !== canvas) hidePopup();
   });
 
   document.addEventListener('keydown', function (e) {
@@ -540,7 +447,7 @@
     if (marks.length === 0 || isAnimatingClear) return;
     
     isAnimatingClear = true;
-    popupState.visible = false;
+    hidePopup();
 
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
