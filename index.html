@@ -38,7 +38,7 @@
     flex-grow: 1;
   }
 
-  /* 3. Floating Overlay Control Interface */
+  /* 3. Floating Overlay Control Interface (Desktop Defaults) */
   #toolbar {
     position: fixed; 
     top: 12px;
@@ -51,7 +51,7 @@
     gap: 12px;
     padding: 8px 16px;
     width: auto;
-    max-width: 95%; /* Expanded slightly to ensure pill won't cut off on narrow landscape */
+    max-width: 95%; 
     background: rgba(28, 28, 28, 0.92);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
@@ -67,7 +67,6 @@
     min-width: 0;
   }
 
-  /* Standard Base Formatting applied universally to all layout viewing profiles */
   #modeBtn, #clearBtn {
     border: none; 
     border-radius: 20px; 
@@ -102,6 +101,69 @@
     overflow: hidden; 
     text-overflow: ellipsis;
     max-width: 240px;
+  }
+
+  /* 3b. OPTIMIZED HIGH-ACCESSIBILITY MOBILE OVERRIDE */
+  @media (max-width: 600px) {
+    #toolbar {
+      top: 0;
+      left: 0;
+      transform: none;
+      width: 100vw;
+      max-width: 100vw;
+      flex-direction: column;
+      gap: 6px;
+      padding: 8px 0 0 0; /* Flat bottom to anchor the buttons edge-to-edge */
+      border-radius: 0;
+      border-left: none;
+      border-right: none;
+      border-top: none;
+      background: rgba(20, 20, 20, 0.96);
+    }
+
+    /* Pull text up into its own dedicated header row space */
+    #toolbar-left {
+      width: 100%;
+      justify-content: center;
+      order: -1; 
+      padding: 0 12px;
+    }
+
+    #modeLabel {
+      font-size: 13px; /* Larger text for readability */
+      color: #cccccc; /* Clear light grey styling */
+      max-width: 100%;
+      white-space: normal;
+      text-align: center;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+    }
+
+    /* Extend button frames directly out to the screen edges */
+    #modeBtn, #clearBtn {
+      width: 50%;
+      border-radius: 0; /* Square sides to complete bezel extension edge-to-edge */
+      padding: 12px 8px; /* Chunkier hit target on mobile screens */
+      font-size: 13px;
+      text-align: center;
+    }
+
+    /* Group both bottom action bezels flush next to each other */
+    #toolbar > button, #toolbar-left {
+      margin: 0;
+    }
+    
+    /* Quick helper container fix if elements wrap */
+    #toolbar {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+    }
+    
+    #toolbar-left {
+      grid-column: span 2;
+      margin-bottom: 4px;
+    }
   }
 
   /* 4. Unified Screen Execution Stage */
@@ -155,7 +217,65 @@
   .v-left   { top: 0; left: 0; height: 100%; width: 23px; background: linear-gradient(to right,  rgba(255,255,255,1) 0%, rgba(212,175,55,0.4) 45%, rgba(212,175,55,0) 100%); }
   .v-right  { top: 0; right: 0; height: 100%; width: 23px; background: linear-gradient(to left,   rgba(255,255,255,1) 0%, rgba(212,175,55,0.4) 45%, rgba(212,175,55,0) 100%); }
 
-  /* 6. Stamp Popup Mechanics */
+  /* 6. HARDWARE-ACCELERATED BILLOWING GLASS SHEET FX LAYER */
+  #transitionSheet {
+    position: absolute;
+    top: -50%;
+    left: -150%;
+    width: 200%;
+    height: 200%;
+    z-index: 5;
+    pointer-events: none;
+    transform: skewX(-45deg) translateX(0%) translateZ(0);
+    will-change: transform;
+    opacity: 0;
+    background-size: 200% 100%;
+  }
+
+  #transitionSheet.run-gold {
+    opacity: 1;
+    background-image: linear-gradient(
+      90deg, 
+      rgba(212, 175, 55, 0) 0%, 
+      rgba(212, 175, 55, 0.15) 30%, 
+      rgba(255, 225, 120, 0.7) 48%, 
+      rgba(212, 175, 55, 0.9) 50%, 
+      rgba(255, 225, 120, 0.4) 52%, 
+      rgba(212, 175, 55, 0.1) 70%, 
+      rgba(212, 175, 55, 0) 100%
+    );
+    animation: css-sweep-planar 0.7s cubic-bezier(0.25, 1, 0.5, 1) forwards,
+               css-billow-wave 0.7s linear forwards;
+  }
+
+  #transitionSheet.run-white {
+    opacity: 1;
+    background-image: linear-gradient(
+      90deg, 
+      rgba(255, 255, 255, 0) 0%, 
+      rgba(255, 255, 255, 0.2) 35%, 
+      rgba(255, 255, 255, 0.85) 49%, 
+      rgba(255, 255, 255, 1) 50%, 
+      rgba(255, 255, 255, 0.6) 52%, 
+      rgba(255, 255, 255, 0.1) 65%, 
+      rgba(255, 255, 255, 0) 100%
+    );
+    animation: css-sweep-planar 0.7s cubic-bezier(0.25, 1, 0.5, 1) forwards,
+               css-billow-wave 0.7s linear forwards;
+  }
+
+  @keyframes css-sweep-planar {
+    0%   { transform: skewX(-45deg) translateX(0%) translateZ(0); }
+    100% { transform: skewX(-45deg) translateX(150%) translateZ(0); }
+  }
+
+  @keyframes css-billow-wave {
+    0%   { background-position: 0% 50%; filter: drop-shadow(0 0 0px transparent); }
+    50%  { background-position: 70% 50%; filter: drop-shadow(-15px 5px 15px rgba(212,175,55,0.4)); }
+    100% { background-position: 100% 50%; filter: drop-shadow(0 0 0px transparent); }
+  }
+
+  /* 7. Stamp Popup Mechanics */
   #popup {
     position: absolute; display: none;
     flex-direction: row; flex-wrap: wrap; justify-content: center;
@@ -178,11 +298,8 @@
   .pop-btn.danger { color: #e74c3c; }
   .pop-btn.danger:hover { background: #e74c3c; color: #fff; border-color: #e74c3c; }
 
-  /* Media Breakpoint Override: Cleared button shrinkage to keep layouts identical across views */
   @media (orientation: landscape) and (max-height: 500px) {
-    #toolbar {
-      top: 6px;
-    }
+    #toolbar { top: 0px; }
     #modeLabel { display: none; }
   }
 </style>
@@ -194,9 +311,9 @@
     
     <div id="toolbar">
       <div id="toolbar-left">
-        <button id="modeBtn" class="to-markup">✏️ Add Fingerings</button>
         <span id="modeLabel">Swipe or click arrows to change slides</span>
       </div>
+      <button id="modeBtn" class="to-markup">✏️ Add Fingerings</button>
       <button id="clearBtn">✕ Clear My Markings</button>
     </div>
 
@@ -215,6 +332,8 @@
       </div>
       
       <canvas id="drawLayer" class="pointer-mode"></canvas>
+      
+      <div id="transitionSheet"></div>
       
       <div id="popup">
         <button class="pop-btn" data-val="0">0</button>
@@ -241,15 +360,15 @@
   const modeBtn        = document.getElementById('modeBtn');
   const modeLabel      = document.getElementById('modeLabel');
   const vignetteLayer  = document.getElementById('vignetteLayer');
+  const transitionSheet= document.getElementById('transitionSheet');
 
   let isMarkupMode = false;
   let isAnimatingClear = false;
   let pendingX = 0, pendingY = 0;
   let marks = [];
 
-  // FIXED: Standardizes string labels seamlessly across all platform dimensions
   function updateButtonLabels() {
-    clearBtn.textContent = "✕ Clear My Markings";
+    clearBtn.textContent = "✕ Clear Markings";
     if (isMarkupMode) {
       modeBtn.textContent = "🔍 View / Navigate";
       modeBtn.className = "to-pointer";
@@ -261,6 +380,11 @@
 
   function setMode(markup) {
     if (isAnimatingClear) return;
+    
+    transitionSheet.className = ''; 
+    void transitionSheet.offsetWidth; 
+    transitionSheet.classList.add(markup ? 'run-gold' : 'run-white');
+
     isMarkupMode = markup;
     if (markup) {
       canvas.classList.replace('pointer-mode', 'markup-mode');
@@ -272,8 +396,16 @@
       hidePopup();
       vignetteLayer.classList.remove('active');
     }
+    
     updateButtonLabels();
+    redraw();
   }
+
+  transitionSheet.addEventListener('animationend', (e) => {
+    if (e.animationName === 'css-sweep-planar') {
+      transitionSheet.className = '';
+    }
+  });
 
   modeBtn.addEventListener('click', () => setMode(!isMarkupMode));
 
