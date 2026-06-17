@@ -115,13 +115,12 @@
       flex-direction: column;
       gap: 8px;
       padding: 10px 12px 12px 12px;
-      border-radius: 24px; /* Beautifully curved capsule shape container preserved */
+      border-radius: 24px; 
       border: 1px solid rgba(255, 255, 255, 0.18);
       background: rgba(22, 22, 22, 0.96);
       display: flex;
     }
 
-    /* Isolated top row for helper text instructions */
     #toolbar-left {
       width: 100%;
       justify-content: center;
@@ -139,19 +138,17 @@
       max-width: 100%;
     }
 
-    /* Side-by-side action row styling safely enclosed within container */
     #modeBtn, #clearBtn {
       width: 100%;
       flex-grow: 1;
       flex-shrink: 1;
-      border-radius: 14px; /* Softly rounded corners for internal element look */
+      border-radius: 14px; 
       padding: 12px 6px;
       font-size: 12.5px;
       text-align: center;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
     }
 
-    /* Wrap buttons together seamlessly side-by-side without overflow */
     #toolbar {
       display: flex;
       flex-direction: row;
@@ -159,7 +156,7 @@
     }
     
     #modeBtn, #clearBtn {
-      width: calc(50% - 4fr); /* Balance out horizontal container width splitting */
+      width: calc(50% - 4fr); 
     }
   }
 
@@ -295,6 +292,35 @@
   .pop-btn.danger { color: #e74c3c; }
   .pop-btn.danger:hover { background: #e74c3c; color: #fff; border-color: #e74c3c; }
 
+  /* 8. ANIMATED ROTATING TARGET ANCHOR ICON */
+  #targetAnchor {
+    position: absolute;
+    display: none;
+    width: 32px;
+    height: 32px;
+    z-index: 4;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    align-items: center;
+    justify-content: center;
+    perspective: 1000px;
+  }
+
+  #targetAnchor .question-inner {
+    font-family: Arial, sans-serif;
+    font-size: 28px;
+    font-weight: 900;
+    color: #FF6B00;
+    text-shadow: 0 0 8px rgba(255, 107, 0, 0.6), 0 0 2px #000000;
+    animation: spin3D 1.8s linear infinite;
+    transform-style: preserve-3d;
+  }
+
+  @keyframes spin3D {
+    0%   { transform: rotateY(0deg); }
+    100% { transform: rotateY(360deg); }
+  }
+
   @media (orientation: landscape) and (max-height: 500px) {
     #toolbar { top: 4px; padding: 6px; }
     #modeLabel { display: none; }
@@ -330,6 +356,10 @@
       
       <canvas id="drawLayer" class="pointer-mode"></canvas>
       
+      <div id="targetAnchor">
+        <div class="question-inner">?</div>
+      </div>
+      
       <div id="transitionSheet"></div>
       
       <div id="popup">
@@ -358,6 +388,7 @@
   const modeLabel      = document.getElementById('modeLabel');
   const vignetteLayer  = document.getElementById('vignetteLayer');
   const transitionSheet= document.getElementById('transitionSheet');
+  const targetAnchor   = document.getElementById('targetAnchor');
 
   let isMarkupMode = false;
   let isAnimatingClear = false;
@@ -520,9 +551,17 @@
     if (top  + ph + M > sh) top  = cy - ph - 12;
     popup.style.left = Math.max(M, left) + 'px';
     popup.style.top  = Math.max(M, top)  + 'px';
+
+    // Position the visual target anchor element smoothly at original workspace coordinates
+    targetAnchor.style.left = cx + 'px';
+    targetAnchor.style.top = cy + 'px';
+    targetAnchor.style.display = 'flex';
   }
 
-  function hidePopup() { popup.style.display = 'none'; }
+  function hidePopup() { 
+    popup.style.display = 'none'; 
+    targetAnchor.style.display = 'none'; // Tear down track cursor cleanly when popup hidden
+  }
 
   canvas.addEventListener('click', function (e) {
     if (!isMarkupMode || isAnimatingClear) return;
