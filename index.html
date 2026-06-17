@@ -103,66 +103,63 @@
     max-width: 240px;
   }
 
-  /* 3b. OPTIMIZED HIGH-ACCESSIBILITY MOBILE OVERRIDE */
+  /* 3b. ULTRA-CLEAN NON-BLEEDING MOBILE LAYOUT STRUCTURING */
   @media (max-width: 600px) {
     #toolbar {
-      top: 0;
-      left: 0;
+      top: 8px;
+      left: 8px;
+      right: 8px;
       transform: none;
-      width: 100vw;
-      max-width: 100vw;
+      width: calc(100vw - 16px);
+      max-width: calc(100vw - 16px);
       flex-direction: column;
-      gap: 6px;
-      padding: 8px 0 0 0; /* Flat bottom to anchor the buttons edge-to-edge */
-      border-radius: 0;
-      border-left: none;
-      border-right: none;
-      border-top: none;
-      background: rgba(20, 20, 20, 0.96);
+      gap: 8px;
+      padding: 10px 12px 12px 12px;
+      border-radius: 24px; /* Beautifully curved capsule shape container preserved */
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: rgba(22, 22, 22, 0.96);
+      display: flex;
     }
 
-    /* Pull text up into its own dedicated header row space */
+    /* Isolated top row for helper text instructions */
     #toolbar-left {
       width: 100%;
       justify-content: center;
-      order: -1; 
-      padding: 0 12px;
+      padding: 0 4px;
+      margin-bottom: 2px;
     }
 
     #modeLabel {
-      font-size: 13px; /* Larger text for readability */
-      color: #cccccc; /* Clear light grey styling */
-      max-width: 100%;
+      font-size: 13px;
+      color: #cccccc;
       white-space: normal;
       text-align: center;
       font-weight: 500;
-      letter-spacing: 0.3px;
+      letter-spacing: 0.2px;
+      max-width: 100%;
     }
 
-    /* Extend button frames directly out to the screen edges */
+    /* Side-by-side action row styling safely enclosed within container */
     #modeBtn, #clearBtn {
-      width: 50%;
-      border-radius: 0; /* Square sides to complete bezel extension edge-to-edge */
-      padding: 12px 8px; /* Chunkier hit target on mobile screens */
-      font-size: 13px;
+      width: 100%;
+      flex-grow: 1;
+      flex-shrink: 1;
+      border-radius: 14px; /* Softly rounded corners for internal element look */
+      padding: 12px 6px;
+      font-size: 12.5px;
       text-align: center;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
     }
 
-    /* Group both bottom action bezels flush next to each other */
-    #toolbar > button, #toolbar-left {
-      margin: 0;
-    }
-    
-    /* Quick helper container fix if elements wrap */
+    /* Wrap buttons together seamlessly side-by-side without overflow */
     #toolbar {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      align-items: center;
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
     }
     
-    #toolbar-left {
-      grid-column: span 2;
-      margin-bottom: 4px;
+    #modeBtn, #clearBtn {
+      width: calc(50% - 4fr); /* Balance out horizontal container width splitting */
     }
   }
 
@@ -299,7 +296,7 @@
   .pop-btn.danger:hover { background: #e74c3c; color: #fff; border-color: #e74c3c; }
 
   @media (orientation: landscape) and (max-height: 500px) {
-    #toolbar { top: 0px; }
+    #toolbar { top: 4px; padding: 6px; }
     #modeLabel { display: none; }
   }
 </style>
