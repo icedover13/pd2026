@@ -186,16 +186,13 @@
   #drawLayer.pointer-mode { pointer-events: none; cursor: default; }
   #drawLayer.markup-mode  { pointer-events: auto; cursor: crosshair; }
 
-  /* 5. FIX: Viewport Edge-Locked Vignette Accents with Mobile Device Safe Insets */
+  /* 5. FIXED: Four-Corner Absolute Viewport Lock */
   #vignetteLayer {
     position: fixed; 
     top: 0;
     left: 0;
     right: 0;
-    /* Uses dynamic viewport height, accounting for iPhone Safari mobile toolbars */
-    bottom: calc(100vh - 100dvh + env(safe-area-inset-bottom, 0px));
-    height: auto;
-    width: 100vw;
+    bottom: 0;
     pointer-events: none;
     z-index: 9; 
     opacity: 0;
@@ -215,19 +212,18 @@
 
   .v-edge { position: absolute; pointer-events: none; }
   .v-top    { top: 0; left: 0; width: 100%; height: 23px; background: linear-gradient(to bottom, rgba(255,255,255,1) 0%, rgba(212,175,55,0.4) 45%, rgba(212,175,55,0) 100%); }
-  /* Pin bottom edge layout directly to the bottom boundaries of the reactive tracking wrapper */
   .v-bottom { bottom: 0; left: 0; width: 100%; height: 23px; background: linear-gradient(to top,    rgba(255,255,255,1) 0%, rgba(212,175,55,0.4) 45%, rgba(212,175,55,0) 100%); }
   .v-left   { top: 0; left: 0; height: 100%; width: 23px; background: linear-gradient(to right,  rgba(255,255,255,1) 0%, rgba(212,175,55,0.4) 45%, rgba(212,175,55,0) 100%); }
   .v-right  { top: 0; right: 0; height: 100%; width: 23px; background: linear-gradient(to left,   rgba(255,255,255,1) 0%, rgba(212,175,55,0.4) 45%, rgba(212,175,55,0) 100%); }
 
-  /* 6. FIX: True Diagonal Sliding Sweep Layer Engine (No Skew Glitches) */
+  /* 6. True Diagonal Sliding Sweep Layer Engine */
   #transitionSheet {
     position: fixed;
     top: 0;
-    left: -120vw; /* Position completely off-screen to the left initially */
+    left: -120vw; 
     width: 120vw;
     height: 100dvh;
-    z-index: 20; /* High index to cover the page elements cleanly during switch */
+    z-index: 20; 
     pointer-events: none;
     will-change: transform;
     opacity: 0;
@@ -236,7 +232,6 @@
 
   #transitionSheet.run-gold {
     opacity: 1;
-    /* Uses a sharp 135-degree diagonal layout angle */
     background-image: linear-gradient(
       135deg, 
       rgba(212, 175, 55, 0) 0%, 
@@ -265,7 +260,6 @@
     animation: sweep-diagonal-step 0.75s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
   }
 
-  /* Sweep path travels past 240vw to ensure it completely drops out of view on wide screens */
   @keyframes sweep-diagonal-step {
     0%   { transform: translateX(0); }
     100% { transform: translateX(240vw); }
