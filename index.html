@@ -171,7 +171,7 @@
     flex-shrink: 0;
   }
 
-  #canvaFrame, #drawLayer, #vignetteLayer {
+  #canvaFrame, #drawLayer {
     position: absolute; 
     inset: 0;
     width: 100% !important; 
@@ -186,10 +186,15 @@
   #drawLayer.pointer-mode { pointer-events: none; cursor: default; }
   #drawLayer.markup-mode  { pointer-events: auto; cursor: crosshair; }
 
-  /* 5. Visual Vignette Accents */
+  /* 5. FIX: Viewport Edge-Locked Vignette Accents */
   #vignetteLayer {
+    position: fixed; /* Replaced absolute with fixed to track strict device display limits */
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
     pointer-events: none;
-    z-index: 2;
+    z-index: 9; /* Raised above everything else except the active popup and toolbar */
     opacity: 0;
     display: none;
     transition: opacity 0.4s cubic-bezier(0.25, 1, 0.5, 1);
@@ -211,12 +216,12 @@
   .v-left   { top: 0; left: 0; height: 100%; width: 23px; background: linear-gradient(to right,  rgba(255,255,255,1) 0%, rgba(212,175,55,0.4) 45%, rgba(212,175,55,0) 100%); }
   .v-right  { top: 0; right: 0; height: 100%; width: 23px; background: linear-gradient(to left,   rgba(255,255,255,1) 0%, rgba(212,175,55,0.4) 45%, rgba(212,175,55,0) 100%); }
 
-  /* 6. HARDWARE-ACCELERATED BILLOWING GLASS SHEET FX LAYER */
+  /* 6. FIX: Hardware-Accelerated Sweep Layer (Clean Exit Pathing) */
   #transitionSheet {
     position: absolute;
     top: -50%;
     left: -150%;
-    width: 200%;
+    width: 250%; /* Expanded footprint width to swallow skew angles completely */
     height: 200%;
     z-index: 5;
     pointer-events: none;
@@ -238,8 +243,8 @@
       rgba(212, 175, 55, 0.1) 70%, 
       rgba(212, 175, 55, 0) 100%
     );
-    animation: css-sweep-planar 0.7s cubic-bezier(0.25, 1, 0.5, 1) forwards,
-               css-billow-wave 0.7s linear forwards;
+    animation: css-sweep-planar 0.75s cubic-bezier(0.25, 1, 0.5, 1) forwards,
+               css-billow-wave 0.75s linear forwards;
   }
 
   #transitionSheet.run-white {
@@ -254,13 +259,14 @@
       rgba(255, 255, 255, 0.1) 65%, 
       rgba(255, 255, 255, 0) 100%
     );
-    animation: css-sweep-planar 0.7s cubic-bezier(0.25, 1, 0.5, 1) forwards,
-               css-billow-wave 0.7s linear forwards;
+    animation: css-sweep-planar 0.75s cubic-bezier(0.25, 1, 0.5, 1) forwards,
+               css-billow-wave 0.75s linear forwards;
   }
 
+  /* Extended translateX vector to 250% to throw skewed trailing edge out of viewport bounds */
   @keyframes css-sweep-planar {
     0%   { transform: skewX(-45deg) translateX(0%) translateZ(0); }
-    100% { transform: skewX(-45deg) translateX(150%) translateZ(0); }
+    100% { transform: skewX(-45deg) translateX(250%) translateZ(0); }
   }
 
   @keyframes css-billow-wave {
@@ -292,7 +298,7 @@
   .pop-btn.danger { color: #e74c3c; }
   .pop-btn.danger:hover { background: #e74c3c; color: #fff; border-color: #e74c3c; }
 
-  /* 8. ANIMATED ROTATING TARGET ANCHOR ICON */
+  /* 8. Animated Rotating Target Anchor Icon */
   #targetAnchor {
     position: absolute;
     display: none;
@@ -340,19 +346,19 @@
       <button id="clearBtn">✕ Clear My Markings</button>
     </div>
 
+    <div id="vignetteLayer">
+      <div class="v-edge v-top"></div>
+      <div class="v-edge v-bottom"></div>
+      <div class="v-edge v-left"></div>
+      <div class="v-edge v-right"></div>
+    </div>
+
     <div id="stage">
       <iframe
         id="canvaFrame"
         src="https://www.canva.com/design/DAHMrA9f2Eo/Jes_B3yfNBVDyZ0COH48qg/view?embed"
         allowfullscreen
       ></iframe>
-      
-      <div id="vignetteLayer">
-        <div class="v-edge v-top"></div>
-        <div class="v-edge v-bottom"></div>
-        <div class="v-edge v-left"></div>
-        <div class="v-edge v-right"></div>
-      </div>
       
       <canvas id="drawLayer" class="pointer-mode"></canvas>
       
@@ -552,7 +558,6 @@
     popup.style.left = Math.max(M, left) + 'px';
     popup.style.top  = Math.max(M, top)  + 'px';
 
-    // Position the visual target anchor element smoothly at original workspace coordinates
     targetAnchor.style.left = cx + 'px';
     targetAnchor.style.top = cy + 'px';
     targetAnchor.style.display = 'flex';
@@ -560,7 +565,7 @@
 
   function hidePopup() { 
     popup.style.display = 'none'; 
-    targetAnchor.style.display = 'none'; // Tear down track cursor cleanly when popup hidden
+    targetAnchor.style.display = 'none'; 
   }
 
   canvas.addEventListener('click', function (e) {
