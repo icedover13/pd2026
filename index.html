@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>My Presentation App</title>
 <style>
   /* 1. Global Reset & Flow Management */
@@ -44,7 +44,7 @@
     top: 12px;
     left: 50%;
     transform: translateX(-50%);
-    z-index: 10;
+    z-index: 15;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -186,15 +186,18 @@
   #drawLayer.pointer-mode { pointer-events: none; cursor: default; }
   #drawLayer.markup-mode  { pointer-events: auto; cursor: crosshair; }
 
-  /* 5. FIX: Viewport Edge-Locked Vignette Accents */
+  /* 5. FIX: Viewport Edge-Locked Vignette Accents with Mobile Device Safe Insets */
   #vignetteLayer {
-    position: fixed; /* Replaced absolute with fixed to track strict device display limits */
+    position: fixed; 
     top: 0;
     left: 0;
+    right: 0;
+    /* Uses dynamic viewport height, accounting for iPhone Safari mobile toolbars */
+    bottom: calc(100vh - 100dvh + env(safe-area-inset-bottom, 0px));
+    height: auto;
     width: 100vw;
-    height: 100vh;
     pointer-events: none;
-    z-index: 9; /* Raised above everything else except the active popup and toolbar */
+    z-index: 9; 
     opacity: 0;
     display: none;
     transition: opacity 0.4s cubic-bezier(0.25, 1, 0.5, 1);
@@ -212,67 +215,60 @@
 
   .v-edge { position: absolute; pointer-events: none; }
   .v-top    { top: 0; left: 0; width: 100%; height: 23px; background: linear-gradient(to bottom, rgba(255,255,255,1) 0%, rgba(212,175,55,0.4) 45%, rgba(212,175,55,0) 100%); }
+  /* Pin bottom edge layout directly to the bottom boundaries of the reactive tracking wrapper */
   .v-bottom { bottom: 0; left: 0; width: 100%; height: 23px; background: linear-gradient(to top,    rgba(255,255,255,1) 0%, rgba(212,175,55,0.4) 45%, rgba(212,175,55,0) 100%); }
   .v-left   { top: 0; left: 0; height: 100%; width: 23px; background: linear-gradient(to right,  rgba(255,255,255,1) 0%, rgba(212,175,55,0.4) 45%, rgba(212,175,55,0) 100%); }
   .v-right  { top: 0; right: 0; height: 100%; width: 23px; background: linear-gradient(to left,   rgba(255,255,255,1) 0%, rgba(212,175,55,0.4) 45%, rgba(212,175,55,0) 100%); }
 
-  /* 6. FIX: Hardware-Accelerated Sweep Layer (Clean Exit Pathing) */
+  /* 6. FIX: True Diagonal Sliding Sweep Layer Engine (No Skew Glitches) */
   #transitionSheet {
-    position: absolute;
-    top: -50%;
-    left: -150%;
-    width: 250%; /* Expanded footprint width to swallow skew angles completely */
-    height: 200%;
-    z-index: 5;
+    position: fixed;
+    top: 0;
+    left: -120vw; /* Position completely off-screen to the left initially */
+    width: 120vw;
+    height: 100dvh;
+    z-index: 20; /* High index to cover the page elements cleanly during switch */
     pointer-events: none;
-    transform: skewX(-45deg) translateX(0%) translateZ(0);
     will-change: transform;
     opacity: 0;
-    background-size: 200% 100%;
+    transform: translateX(0);
   }
 
   #transitionSheet.run-gold {
     opacity: 1;
+    /* Uses a sharp 135-degree diagonal layout angle */
     background-image: linear-gradient(
-      90deg, 
+      135deg, 
       rgba(212, 175, 55, 0) 0%, 
-      rgba(212, 175, 55, 0.15) 30%, 
-      rgba(255, 225, 120, 0.7) 48%, 
-      rgba(212, 175, 55, 0.9) 50%, 
-      rgba(255, 225, 120, 0.4) 52%, 
-      rgba(212, 175, 55, 0.1) 70%, 
+      rgba(212, 175, 55, 0.25) 25%, 
+      rgba(255, 225, 120, 0.85) 48%, 
+      rgba(212, 175, 55, 1) 50%, 
+      rgba(255, 225, 120, 0.5) 52%, 
+      rgba(212, 175, 55, 0.15) 75%, 
       rgba(212, 175, 55, 0) 100%
     );
-    animation: css-sweep-planar 0.75s cubic-bezier(0.25, 1, 0.5, 1) forwards,
-               css-billow-wave 0.75s linear forwards;
+    animation: sweep-diagonal-step 0.75s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
   }
 
   #transitionSheet.run-white {
     opacity: 1;
     background-image: linear-gradient(
-      90deg, 
+      135deg, 
       rgba(255, 255, 255, 0) 0%, 
-      rgba(255, 255, 255, 0.2) 35%, 
-      rgba(255, 255, 255, 0.85) 49%, 
+      rgba(255, 255, 255, 0.3) 25%, 
+      rgba(255, 255, 255, 0.9) 48%, 
       rgba(255, 255, 255, 1) 50%, 
       rgba(255, 255, 255, 0.6) 52%, 
-      rgba(255, 255, 255, 0.1) 65%, 
+      rgba(255, 255, 255, 0.15) 75%, 
       rgba(255, 255, 255, 0) 100%
     );
-    animation: css-sweep-planar 0.75s cubic-bezier(0.25, 1, 0.5, 1) forwards,
-               css-billow-wave 0.75s linear forwards;
+    animation: sweep-diagonal-step 0.75s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
   }
 
-  /* Extended translateX vector to 250% to throw skewed trailing edge out of viewport bounds */
-  @keyframes css-sweep-planar {
-    0%   { transform: skewX(-45deg) translateX(0%) translateZ(0); }
-    100% { transform: skewX(-45deg) translateX(250%) translateZ(0); }
-  }
-
-  @keyframes css-billow-wave {
-    0%   { background-position: 0% 50%; filter: drop-shadow(0 0 0px transparent); }
-    50%  { background-position: 70% 50%; filter: drop-shadow(-15px 5px 15px rgba(212,175,55,0.4)); }
-    100% { background-position: 100% 50%; filter: drop-shadow(0 0 0px transparent); }
+  /* Sweep path travels past 240vw to ensure it completely drops out of view on wide screens */
+  @keyframes sweep-diagonal-step {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(240vw); }
   }
 
   /* 7. Stamp Popup Mechanics */
@@ -436,7 +432,7 @@
   }
 
   transitionSheet.addEventListener('animationend', (e) => {
-    if (e.animationName === 'css-sweep-planar') {
+    if (e.animationName === 'sweep-diagonal-step') {
       transitionSheet.className = '';
     }
   });
