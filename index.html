@@ -186,7 +186,7 @@
   #drawLayer.pointer-mode { pointer-events: none; cursor: default; }
   #drawLayer.markup-mode  { pointer-events: auto; cursor: crosshair; }
 
-  /* 5. FIXED: Four-Corner Absolute Viewport Lock */
+  /* 5. Viewport Edge-Locked Vignette Accents */
   #vignetteLayer {
     position: fixed; 
     top: 0;
@@ -433,24 +433,36 @@
 
   modeBtn.addEventListener('click', () => setMode(!isMarkupMode));
 
+  // High-Fidelity/HD Retina Resolution Scaler
   function resizeCanvas() {
     const W = stage.offsetWidth;
     const H = stage.offsetHeight;
-    if (canvas.width === W && canvas.height === H) return;
-    canvas.width  = W;
-    canvas.height = H;
+    const dpr = window.devicePixelRatio || 1;
+    
+    if (canvas.width === W * dpr && canvas.height === H * dpr) return;
+    
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    
+    // Scale context back down layout-wise to keep resolution tight
+    ctx.resetTransform();
+    ctx.scale(dpr, dpr);
+    
     redraw();
   }
 
   function redraw() {
+    // Clear using standard layout dimensions since context is scaled
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     marks.forEach(drawMark);
   }
 
   function drawMark(m) {
-    const SIZE   = Math.max(canvas.width * 0.032, 16);
-    const ORANGE = '#FF6B00';
-    const baseLW = SIZE * 0.14;
+    // Width reference independent of dpr due to automatic context mapping
+    const layoutW = canvas.width / (window.devicePixelRatio || 1);
+    const SIZE    = Math.max(layoutW * 0.032, 16);
+    const ORANGE  = '#FF6B00';
+    const baseLW  = SIZE * 0.14;
 
     if (m.type === 'number') {
       ctx.font          = `700 ${SIZE}px Arial`;
@@ -491,32 +503,18 @@
       
       ctx.save();
       ctx.translate(m.x, m.y);
-      ctx.lineCap   = 'square';
-      ctx.lineJoin  = 'miter';
-
-      ctx.strokeStyle = 'rgba(0,0,0,0.7)';
-      ctx.lineWidth   = (baseLW * 2) + 1.5;
-      ctx.beginPath();
-      ctx.moveTo(-widthX,  heightY);
-      ctx.lineTo(-widthX, -heightY);
-      ctx.lineTo(widthX,  -heightY);
-      ctx.lineTo(widthX,   heightY);
-      ctx.stroke();
-
+      
+      // Removed all shadow matrices and stroke offsets for a flat downbow line structure
+      ctx.lineCap     = 'square';
+      ctx.lineJoin    = 'miter';
       ctx.strokeStyle = ORANGE;
+      ctx.lineWidth   = baseLW * 1.6;
+
       ctx.beginPath();
       ctx.moveTo(-widthX,  heightY);
       ctx.lineTo(-widthX, -heightY);
       ctx.lineTo(widthX,  -heightY);
       ctx.lineTo(widthX,   heightY);
-      
-      ctx.lineWidth = baseLW; 
-      ctx.stroke();
-      
-      ctx.lineWidth = baseLW * 2;
-      ctx.beginPath();
-      ctx.moveTo(-widthX, -heightY);
-      ctx.lineTo(widthX,  -heightY);
       ctx.stroke();
       
       ctx.restore();
@@ -526,9 +524,11 @@
   function getEventPos(e) {
     const rect = canvas.getBoundingClientRect();
     const src  = e.changedTouches ? e.changedTouches[0] : e;
+    
+    // Normalized layout coordinates
     return {
-      x:  (src.clientX - rect.left) * (canvas.width  / rect.width),
-      y:  (src.clientY - rect.top)  * (canvas.height / rect.height),
+      x:  src.clientX - rect.left,
+      y:  src.clientY - rect.top,
       cx: src.clientX - rect.left,
       cy: src.clientY - rect.top
     };
@@ -583,7 +583,8 @@
     const val = btn.dataset.val;
     hidePopup();
     if (val === 'clear') {
-      const radius = Math.max(canvas.width * 0.032, 16) * 1.2;
+      const layoutW = canvas.width / (window.devicePixelRatio || 1);
+      const radius = Math.max(layoutW * 0.032, 16) * 1.2;
       marks = marks.filter(m => {
         const dx = m.x - pendingX, dy = m.y - pendingY;
         return Math.sqrt(dx * dx + dy * dy) > radius;
@@ -612,8 +613,10 @@
     isAnimatingClear = true;
     hidePopup();
 
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
+    const layoutW = canvas.width / (window.devicePixelRatio || 1);
+    const layoutH = canvas.height / (window.devicePixelRatio || 1);
+    const centerX = layoutW / 2;
+    const centerY = layoutH / 2;
     const startTime = performance.now();
     const IMPLODE_DURATION = 700; 
 
@@ -631,10 +634,10 @@
     for (let i = 0; i < 7; i++) {
       const edge = Math.floor(Math.random() * 4);
       let rx, ry;
-      if (edge === 0) { rx = Math.random() * canvas.width; ry = -20; }
-      else if (edge === 1) { rx = canvas.width + 20; ry = Math.random() * canvas.height; }
-      else if (edge === 2) { rx = Math.random() * canvas.width; ry = canvas.height + 20; }
-      else { rx = -20; ry = Math.random() * canvas.height; }
+      if (edge === 0) { rx = Math.random() * layoutW; ry = -20; }
+      else if (edge === 1) { rx = layoutW + 20; ry = Math.random() * layoutH; }
+      else if (edge === 2) { rx = Math.random() * layoutW; ry = layoutH + 20; }
+      else { rx = -20; ry = Math.random() * layoutH; }
 
       particles.push({
         type: 'number',
@@ -676,20 +679,20 @@
             p.phase = 'explode';
             
             const angle = (idx * (360 / particles.length) * Math.PI) / 180 + (Math.random() * 0.4 - 0.2);
-            const speed = (canvas.width * 0.025) + (Math.random() * 10);
+            const speed = (layoutW * 0.025) + (Math.random() * 10);
             p.vx = Math.cos(angle) * speed;
             p.vy = Math.sin(angle) * speed;
           } else {
             const progress = elapsed / IMPLODE_DURATION;
             const ease = progress * progress * progress; 
             p.x = p.startX + (centerX - p.startX) * ease;
-            p.y = p.startY + (centerY - p.startX) * ease;
+            p.y = p.startY + (centerY - p.startY) * ease;
           }
         } else if (p.phase === 'explode') {
           p.x += p.vx;
           p.y += p.vy;
 
-          if (p.x > -50 && p.x < canvas.width + 50 && p.y > -50 && p.y < canvas.height + 50) {
+          if (p.x > -50 && p.x < layoutW + 50 && p.y > -50 && p.y < layoutH + 50) {
             itemsStillDrawing = true;
           }
         }
@@ -713,8 +716,8 @@
   });
   ro.observe(stage);
   
-  window.addEventListener('orientationchange', updateButtonLabels);
-  window.addEventListener('resize', updateButtonLabels);
+  window.addEventListener('orientationchange', () => { resizeCanvas(); updateButtonLabels(); });
+  window.addEventListener('resize', () => { resizeCanvas(); updateButtonLabels(); });
 
   resizeCanvas();
   setMode(false);
