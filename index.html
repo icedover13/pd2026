@@ -38,7 +38,7 @@
     flex-grow: 1;
   }
 
-  /* 3. Floating Overlay Control Interface (Desktop Defaults) */
+  /* 3. Floating Overlay Control Interface */
   #toolbar {
     position: fixed; 
     top: 12px;
@@ -87,7 +87,6 @@
 
   #modeBtn.to-pointer { background: #2980b9; color: #fff; }
   #modeBtn.to-markup  { background: #27ae60; color: #fff; }
-
   #modeBtn.to-pointer:hover { background: #3498db; box-shadow: 0 0 8px rgba(52, 152, 219, 0.5); }
   #modeBtn.to-markup:hover  { background: #2ecc71; box-shadow: 0 0 8px rgba(46, 204, 113, 0.5); }
   
@@ -103,61 +102,22 @@
     max-width: 240px;
   }
 
-  /* 3b. ULTRA-CLEAN NON-BLEEDING MOBILE LAYOUT STRUCTURING */
   @media (max-width: 600px) {
     #toolbar {
-      top: 8px;
-      left: 8px;
-      right: 8px;
+      top: 8px; left: 8px; right: 8px;
       transform: none;
       width: calc(100vw - 16px);
       max-width: calc(100vw - 16px);
-      flex-direction: column;
-      gap: 8px;
-      padding: 10px 12px 12px 12px;
+      flex-direction: row; flex-wrap: wrap;
+      gap: 8px; padding: 10px 12px 12px 12px;
       border-radius: 24px; 
       border: 1px solid rgba(255, 255, 255, 0.18);
       background: rgba(22, 22, 22, 0.96);
       display: flex;
     }
-
-    #toolbar-left {
-      width: 100%;
-      justify-content: center;
-      padding: 0 4px;
-      margin-bottom: 2px;
-    }
-
-    #modeLabel {
-      font-size: 13px;
-      color: #cccccc;
-      white-space: normal;
-      text-align: center;
-      font-weight: 500;
-      letter-spacing: 0.2px;
-      max-width: 100%;
-    }
-
-    #modeBtn, #clearBtn {
-      width: 100%;
-      flex-grow: 1;
-      flex-shrink: 1;
-      border-radius: 14px; 
-      padding: 12px 6px;
-      font-size: 12.5px;
-      text-align: center;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-    }
-
-    #toolbar {
-      display: flex;
-      flex-direction: row;
-      flex-wrap: wrap;
-    }
-    
-    #modeBtn, #clearBtn {
-      width: calc(50% - 4fr); 
-    }
+    #toolbar-left { width: 100%; justify-content: center; padding: 0 4px; margin-bottom: 2px; }
+    #modeLabel { font-size: 13px; color: #cccccc; white-space: normal; text-align: center; font-weight: 500; max-width: 100%; }
+    #modeBtn, #clearBtn { width: calc(50% - 4fr); flex-grow: 1; flex-shrink: 1; border-radius: 14px; padding: 12px 6px; font-size: 12.5px; text-align: center; }
   }
 
   /* 4. Unified Screen Execution Stage */
@@ -179,36 +139,17 @@
     border: none;
   }
 
-  #drawLayer {
-    touch-action: auto; 
-    z-index: 3;
-  }
+  #drawLayer { touch-action: auto; z-index: 3; }
   #drawLayer.pointer-mode { pointer-events: none; cursor: default; }
   #drawLayer.markup-mode  { pointer-events: auto; cursor: crosshair; }
 
   /* 5. Viewport Edge-Locked Vignette Accents */
   #vignetteLayer {
-    position: fixed; 
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    pointer-events: none;
-    z-index: 9; 
-    opacity: 0;
-    display: none;
+    position: fixed; inset: 0; pointer-events: none; z-index: 9; opacity: 0; display: none;
     transition: opacity 0.4s cubic-bezier(0.25, 1, 0.5, 1);
   }
-
-  #vignetteLayer.active {
-    display: block;
-    animation: force-fade 0.4s cubic-bezier(0.25, 1, 0.5, 1) forwards;
-  }
-
-  @keyframes force-fade {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
+  #vignetteLayer.active { display: block; animation: force-fade 0.4s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
+  @keyframes force-fade { from { opacity: 0; } to { opacity: 1; } }
 
   .v-edge { position: absolute; pointer-events: none; }
   .v-top    { top: 0; left: 0; width: 100%; height: 23px; background: linear-gradient(to bottom, rgba(255,255,255,1) 0%, rgba(212,175,55,0.4) 45%, rgba(212,175,55,0) 100%); }
@@ -218,54 +159,22 @@
 
   /* 6. True Diagonal Sliding Sweep Layer Engine */
   #transitionSheet {
-    position: fixed;
-    top: 0;
-    left: -120vw; 
-    width: 120vw;
-    height: 100dvh;
-    z-index: 20; 
-    pointer-events: none;
-    will-change: transform;
-    opacity: 0;
-    transform: translateX(0);
+    position: fixed; top: 0; left: -120vw; width: 120vw; height: 100dvh; z-index: 20; 
+    pointer-events: none; will-change: transform; opacity: 0; transform: translateX(0);
   }
-
   #transitionSheet.run-gold {
     opacity: 1;
-    background-image: linear-gradient(
-      135deg, 
-      rgba(212, 175, 55, 0) 0%, 
-      rgba(212, 175, 55, 0.25) 25%, 
-      rgba(255, 225, 120, 0.85) 48%, 
-      rgba(212, 175, 55, 1) 50%, 
-      rgba(255, 225, 120, 0.5) 52%, 
-      rgba(212, 175, 55, 0.15) 75%, 
-      rgba(212, 175, 55, 0) 100%
-    );
+    background-image: linear-gradient(135deg, rgba(212,175,55,0) 0%, rgba(212,175,55,0.25) 25%, rgba(255,225,120,0.85) 48%, rgba(212,175,55,1) 50%, rgba(255,225,120,0.5) 52%, rgba(212,175,55,0.15) 75%, rgba(212,175,55,0) 100%);
     animation: sweep-diagonal-step 0.75s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
   }
-
   #transitionSheet.run-white {
     opacity: 1;
-    background-image: linear-gradient(
-      135deg, 
-      rgba(255, 255, 255, 0) 0%, 
-      rgba(255, 255, 255, 0.3) 25%, 
-      rgba(255, 255, 255, 0.9) 48%, 
-      rgba(255, 255, 255, 1) 50%, 
-      rgba(255, 255, 255, 0.6) 52%, 
-      rgba(255, 255, 255, 0.15) 75%, 
-      rgba(255, 255, 255, 0) 100%
-    );
+    background-image: linear-gradient(135deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 25%, rgba(255,255,255,0.9) 48%, rgba(255,255,255,1) 50%, rgba(255,255,255,0.6) 52%, rgba(255,255,255,0.15) 75%, rgba(255,255,255,0) 100%);
     animation: sweep-diagonal-step 0.75s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
   }
+  @keyframes sweep-diagonal-step { 0% { transform: translateX(0); } 100% { transform: translateX(240vw); } }
 
-  @keyframes sweep-diagonal-step {
-    0%   { transform: translateX(0); }
-    100% { transform: translateX(240vw); }
-  }
-
-  /* 7. Stamp Popup Mechanics */
+  /* 7. Stamp Popup Mechanics (Modified to adapt dynamically with JS scaling shifts) */
   #popup {
     position: absolute; display: none;
     flex-direction: row; flex-wrap: wrap; justify-content: center;
@@ -273,15 +182,13 @@
     border-radius: 8px; padding: 6px; gap: 4px;
     z-index: 10; box-shadow: 0 4px 16px rgba(0,0,0,0.6);
     max-width: 230px;
+    transform-origin: top left;
   }
 
   .pop-btn {
-    background: #3a3a3a; color: #f0f0f0;
-    border: 1px solid #666; border-radius: 5px;
-    font-size: 15px; font-weight: 700;
-    padding: 6px 10px; cursor: pointer;
-    min-width: 38px; text-align: center;
-    transition: background 0.12s, transform 0.05s; user-select: none;
+    background: #3a3a3a; color: #f0f0f0; border: 1px solid #666; border-radius: 5px;
+    font-size: 15px; font-weight: 700; padding: 6px 10px; cursor: pointer;
+    min-width: 38px; text-align: center; transition: background 0.12s, transform 0.05s; user-select: none;
   }
   .pop-btn:hover { background: #e67e22; color: #fff; border-color: #e67e22; }
   .pop-btn:active { transform: scale(0.92); }
@@ -290,32 +197,15 @@
 
   /* 8. Animated Rotating Target Anchor Icon */
   #targetAnchor {
-    position: absolute;
-    display: none;
-    width: 32px;
-    height: 32px;
-    z-index: 4;
-    pointer-events: none;
-    transform: translate(-50%, -50%);
-    align-items: center;
-    justify-content: center;
-    perspective: 1000px;
+    position: absolute; display: none; width: 32px; height: 32px; z-index: 4; pointer-events: none;
+    transform: translate(-50%, -50%); align-items: center; justify-content: center; perspective: 1000px;
   }
-
   #targetAnchor .question-inner {
-    font-family: Arial, sans-serif;
-    font-size: 28px;
-    font-weight: 900;
-    color: #FF6B00;
+    font-family: Arial, sans-serif; font-size: 28px; font-weight: 900; color: #FF6B00;
     text-shadow: 0 0 8px rgba(255, 107, 0, 0.6), 0 0 2px #000000;
-    animation: spin3D 1.8s linear infinite;
-    transform-style: preserve-3d;
+    animation: spin3D 1.8s linear infinite; transform-style: preserve-3d;
   }
-
-  @keyframes spin3D {
-    0%   { transform: rotateY(0deg); }
-    100% { transform: rotateY(360deg); }
-  }
+  @keyframes spin3D { 0% { transform: rotateY(0deg); } 100% { transform: rotateY(360deg); } }
 
   @media (orientation: landscape) and (max-height: 500px) {
     #toolbar { top: 4px; padding: 6px; }
@@ -344,12 +234,7 @@
     </div>
 
     <div id="stage">
-      <iframe
-        id="canvaFrame"
-        src="https://www.canva.com/design/DAHMrA9f2Eo/Jes_B3yfNBVDyZ0COH48qg/view?embed"
-        allowfullscreen
-      ></iframe>
-      
+      <iframe id="canvaFrame" src="https://www.canva.com/design/DAHMrA9f2Eo/Jes_B3yfNBVDyZ0COH48qg/view?embed" allowfullscreen></iframe>
       <canvas id="drawLayer" class="pointer-mode"></canvas>
       
       <div id="targetAnchor">
@@ -389,7 +274,11 @@
   let isMarkupMode = false;
   let isAnimatingClear = false;
   let pendingX = 0, pendingY = 0;
+  let rawPopupX = 0, rawPopupY = 0; // Layout coords untouched by visual zoom calculations
   let marks = [];
+  
+  // Track glowing state for the newest item
+  let glowingMark = null;
 
   function updateButtonLabels() {
     clearBtn.textContent = "✕ Clear Markings";
@@ -433,7 +322,6 @@
 
   modeBtn.addEventListener('click', () => setMode(!isMarkupMode));
 
-  // High-Fidelity/HD Retina Resolution Scaler
   function resizeCanvas() {
     const W = stage.offsetWidth;
     const H = stage.offsetHeight;
@@ -444,25 +332,36 @@
     canvas.width = W * dpr;
     canvas.height = H * dpr;
     
-    // Scale context back down layout-wise to keep resolution tight
     ctx.resetTransform();
     ctx.scale(dpr, dpr);
-    
     redraw();
   }
 
   function redraw() {
-    // Clear using standard layout dimensions since context is scaled
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     marks.forEach(drawMark);
   }
 
   function drawMark(m) {
-    // Width reference independent of dpr due to automatic context mapping
     const layoutW = canvas.width / (window.devicePixelRatio || 1);
     const SIZE    = Math.max(layoutW * 0.032, 16);
     const ORANGE  = '#FF6B00';
     const baseLW  = SIZE * 0.14;
+
+    ctx.save();
+    
+    // Check if this mark is currently within its 1-second interactive glow lifecycle
+    if (glowingMark && glowingMark.mark === m) {
+      const elapsed = performance.now() - glowingMark.startTime;
+      if (elapsed < 1000) {
+        // Linear fade factor out to 1 second
+        const intensity = 1 - (elapsed / 1000); 
+        ctx.shadowColor = '#FF9F43';
+        ctx.shadowBlur = 25 * intensity;
+      } else {
+        glowingMark = null; // Expire lifecycle window
+      }
+    }
 
     if (m.type === 'number') {
       ctx.font          = `700 ${SIZE}px Arial`;
@@ -476,7 +375,6 @@
     } else if (m.type === 'upbow') {
       const widthX = SIZE * 0.28; 
       const heightY = SIZE * 0.65;
-      ctx.save();
       ctx.translate(m.x, m.y);
       
       ctx.strokeStyle = 'rgba(0,0,0,0.7)';
@@ -496,15 +394,11 @@
       ctx.lineTo(0,        heightY * 0.5);
       ctx.lineTo(widthX,  -heightY * 0.5);
       ctx.stroke();
-      ctx.restore();
     } else if (m.type === 'downbow') {
       const widthX = Math.max((SIZE * 0.45) - 3, 6);
       const heightY = (SIZE * 0.5) * (5 / 6);
-      
-      ctx.save();
       ctx.translate(m.x, m.y);
       
-      // Removed all shadow matrices and stroke offsets for a flat downbow line structure
       ctx.lineCap     = 'square';
       ctx.lineJoin    = 'miter';
       ctx.strokeStyle = ORANGE;
@@ -516,16 +410,14 @@
       ctx.lineTo(widthX,  -heightY);
       ctx.lineTo(widthX,   heightY);
       ctx.stroke();
-      
-      ctx.restore();
     }
+    
+    ctx.restore();
   }
 
   function getEventPos(e) {
     const rect = canvas.getBoundingClientRect();
     const src  = e.changedTouches ? e.changedTouches[0] : e;
-    
-    // Normalized layout coordinates
     return {
       x:  src.clientX - rect.left,
       y:  src.clientY - rect.top,
@@ -534,19 +426,41 @@
     };
   }
 
+  // Adaptive Zoom and Position Normalizer Loop
+  function positionAndScalePopup() {
+    if (popup.style.display !== 'flex') return;
+
+    // Default target scale is 1.07 (7% increase)
+    let finalScale = 1.07;
+    
+    if (window.visualViewport) {
+      // Divide target layout size by window zoom factor to offset browser font expansion completely
+      finalScale = 1.07 / window.visualViewport.scale;
+    }
+
+    popup.style.transform = `scale(${finalScale})`;
+    popup.style.left = rawPopupX + 'px';
+    popup.style.top = rawPopupY + 'px';
+  }
+
   function showPopup(cx, cy) {
     if (isAnimatingClear) return;
     popup.style.display = 'flex';
+    
     const pw = popup.offsetWidth  || 230;
     const ph = popup.offsetHeight || 90;
     const sw = stage.offsetWidth;
     const sh = stage.offsetHeight;
     const M  = 8;
+    
     let left = cx + 8, top = cy + 12;
     if (left + pw + M > sw) left = cx - pw - 8;
     if (top  + ph + M > sh) top  = cy - ph - 12;
-    popup.style.left = Math.max(M, left) + 'px';
-    popup.style.top  = Math.max(M, top)  + 'px';
+    
+    rawPopupX = Math.max(M, left);
+    rawPopupY = Math.max(M, top);
+    
+    positionAndScalePopup();
 
     targetAnchor.style.left = cx + 'px';
     targetAnchor.style.top = cy + 'px';
@@ -582,6 +496,7 @@
     e.stopPropagation();
     const val = btn.dataset.val;
     hidePopup();
+    
     if (val === 'clear') {
       const layoutW = canvas.width / (window.devicePixelRatio || 1);
       const radius = Math.max(layoutW * 0.032, 16) * 1.2;
@@ -589,15 +504,39 @@
         const dx = m.x - pendingX, dy = m.y - pendingY;
         return Math.sqrt(dx * dx + dy * dy) > radius;
       });
-    } else if (val === 'upbow') {
-      marks.push({ type: 'upbow',   x: pendingX, y: pendingY });
-    } else if (val === 'downbow') {
-      marks.push({ type: 'downbow', x: pendingX, y: pendingY });
+      redraw();
     } else {
-      marks.push({ type: 'number', val, x: pendingX, y: pendingY });
+      let newMark = { type: '', val: '', x: pendingX, y: pendingY };
+      if (val === 'upbow') {
+        newMark.type = 'upbow';
+      } else if (val === 'downbow') {
+        newMark.type = 'downbow';
+      } else {
+        newMark.type = 'number';
+        newMark.val = val;
+      }
+      
+      marks.push(newMark);
+      
+      // Initialize interactive glow tracker profile for 1 second
+      glowingMark = {
+        mark: newMark,
+        startTime: performance.now()
+      };
+      
+      // Execute micro animation loops to render dynamic fade curves smoothly
+      animateGlow();
+    }
+  });
+
+  function animateGlow() {
+    if (!glowingMark) {
+      redraw();
+      return;
     }
     redraw();
-  });
+    requestAnimationFrame(animateGlow);
+  }
 
   document.addEventListener('click', function (e) {
     if (!popup.contains(e.target) && e.target !== canvas) hidePopup();
@@ -607,11 +546,18 @@
     if (e.key === 'Escape') hidePopup();
   });
 
+  // Track layout zoom metrics continuously to keep scale consistent
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', positionAndScalePopup);
+    window.visualViewport.addEventListener('scroll', positionAndScalePopup);
+  }
+
   clearBtn.addEventListener('click', function () {
     if (marks.length === 0 || isAnimatingClear) return;
     
     isAnimatingClear = true;
     hidePopup();
+    glowingMark = null;
 
     const layoutW = canvas.width / (window.devicePixelRatio || 1);
     const layoutH = canvas.height / (window.devicePixelRatio || 1);
